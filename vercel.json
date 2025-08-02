@@ -1,10 +1,12 @@
 {
   "version": 2,
   "name": "sahayak-word-addin",
-  "builds": [
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "rewrites": [
     {
-      "src": "public/**",
-      "use": "@vercel/static"
+      "source": "/(.*)",
+      "destination": "/public/$1"
     }
   ],
   "headers": [
@@ -51,10 +53,6 @@
         {
           "key": "Cache-Control",
           "value": "public, max-age=86400"
-        },
-        {
-          "key": "Access-Control-Allow-Origin",
-          "value": "*"
         }
       ]
     },
@@ -64,14 +62,6 @@
         {
           "key": "Content-Type",
           "value": "text/html"
-        },
-        {
-          "key": "X-Frame-Options",
-          "value": "ALLOWALL"
-        },
-        {
-          "key": "Content-Security-Policy",
-          "value": "frame-ancestors 'self' https://*.office.com https://*.microsoft.com https://*.office365.com https://*.sharepoint.com https://*.officeapps.live.com"
         }
       ]
     },
@@ -81,14 +71,6 @@
         {
           "key": "Content-Type",
           "value": "text/html"
-        },
-        {
-          "key": "X-Frame-Options",
-          "value": "ALLOWALL"
-        },
-        {
-          "key": "Content-Security-Policy",
-          "value": "frame-ancestors 'self' https://*.office.com https://*.microsoft.com https://*.office365.com https://*.sharepoint.com https://*.officeapps.live.com"
         }
       ]
     }
