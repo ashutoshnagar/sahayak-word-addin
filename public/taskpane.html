@@ -1,0 +1,1297 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sahayak - Document Assistant</title>
+    
+    <!-- Office.js -->
+    <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js" type="text/javascript"></script>
+    
+    <!-- Embedded CSS -->
+    <style>
+        /* Sahayak - Document Assistant Styles */
+        
+        /* Reset and Base Styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            line-height: 1.5;
+            overflow-x: hidden;
+        }
+        
+        /* Header */
+        .sahayak-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .sahayak-logo h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 5px;
+        }
+        
+        .tagline {
+            color: #666;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        /* Main Content */
+        .sahayak-main {
+            padding: 0;
+            min-height: calc(100vh - 140px);
+        }
+        
+        .section {
+            padding: 30px 20px;
+            background: white;
+            margin: 0;
+        }
+        
+        .section.hidden {
+            display: none;
+        }
+        
+        /* Welcome Section */
+        .welcome-content {
+            text-align: center;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        
+        .feature-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.8;
+        }
+        
+        .welcome-content h2 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+        }
+        
+        .welcome-content p {
+            color: #666;
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+        
+        /* Buttons */
+        .primary-button, .secondary-button, .fix-button, .ignore-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            min-width: 120px;
+            justify-content: center;
+        }
+        
+        .primary-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .primary-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+        
+        .secondary-button {
+            background: #f8f9fa;
+            color: #666;
+            border: 2px solid #e9ecef;
+        }
+        
+        .secondary-button:hover {
+            background: #e9ecef;
+            border-color: #dee2e6;
+        }
+        
+        .button-icon {
+            font-size: 1.1rem;
+        }
+        
+        /* Scanning Section */
+        .scanning-animation {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        
+        .loader {
+            width: 60px;
+            height: 60px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 30px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .scanning-animation h3 {
+            font-size: 1.5rem;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .scanning-animation p {
+            color: #666;
+        }
+        
+        /* Results Section */
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f8f9fa;
+        }
+        
+        .results-summary {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .issue-count {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        /* Error Categories */
+        .error-categories {
+            margin-bottom: 30px;
+        }
+        
+        .error-category {
+            margin-bottom: 25px;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #e9ecef;
+        }
+        
+        .category-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px 20px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .category-header.critical {
+            background: #fff5f5;
+            color: #c53030;
+            border-left: 4px solid #fc8181;
+        }
+        
+        .category-header.warning {
+            background: #fffbeb;
+            color: #d69e2e;
+            border-left: 4px solid #f6e05e;
+        }
+        
+        .category-header.suggestion {
+            background: #f0fff4;
+            color: #38a169;
+            border-left: 4px solid #9ae6b4;
+        }
+        
+        .category-icon {
+            font-size: 1.2rem;
+        }
+        
+        .count {
+            margin-left: auto;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+        
+        .error-list {
+            padding: 0;
+        }
+        
+        .error-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid #f1f3f4;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: white;
+        }
+        
+        .error-item:hover {
+            background: #f8f9fa;
+        }
+        
+        .error-item:last-child {
+            border-bottom: none;
+        }
+        
+        .error-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .error-description {
+            color: #666;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+        
+        .error-location {
+            color: #999;
+            font-size: 0.8rem;
+            margin-top: 5px;
+        }
+        
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        /* Error Card Popup */
+        .error-card {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 400px;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+        }
+        
+        .error-card.hidden {
+            display: none;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -60%);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%);
+            }
+        }
+        
+        .error-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 20px 0;
+        }
+        
+        .error-type-badge {
+            background: #fc8181;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #999;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+        }
+        
+        .close-btn:hover {
+            background: #f1f3f4;
+            color: #666;
+        }
+        
+        .error-card-content {
+            padding: 15px 20px 20px;
+        }
+        
+        .error-card-content h4 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+        
+        .error-card-content p {
+            color: #666;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+        
+        .error-suggestion {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 3px solid #667eea;
+        }
+        
+        .error-card-actions {
+            display: flex;
+            gap: 10px;
+            padding: 0 20px 20px;
+        }
+        
+        .fix-button {
+            background: #48bb78;
+            color: white;
+            flex: 1;
+        }
+        
+        .fix-button:hover {
+            background: #38a169;
+        }
+        
+        .ignore-button {
+            background: #e2e8f0;
+            color: #4a5568;
+            flex: 1;
+        }
+        
+        .ignore-button:hover {
+            background: #cbd5e0;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 480px) {
+            .sahayak-header {
+                padding: 15px;
+            }
+            
+            .sahayak-logo h1 {
+                font-size: 2rem;
+            }
+            
+            .section {
+                padding: 20px 15px;
+            }
+            
+            .results-header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: stretch;
+            }
+            
+            .results-summary {
+                justify-content: space-between;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .error-card {
+                width: 95%;
+                margin: 0 auto;
+            }
+        }
+        
+        /* Utility Classes */
+        .hidden {
+            display: none !important;
+        }
+        
+        .text-center {
+            text-align: center;
+        }
+        
+        .mb-20 {
+            margin-bottom: 20px;
+        }
+        
+        .mt-20 {
+            margin-top: 20px;
+        }
+        
+        /* Office.js specific overrides */
+        .ms-welcome {
+            background: none !important;
+        }
+        
+        .ms-font-m {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+        }
+    </style>
+</head>
+
+<body class="ms-font-m ms-welcome ms-Fabric">
+    <!-- Header -->
+    <header class="sahayak-header">
+        <div class="sahayak-logo">
+            <h1>सहायक</h1>
+            <p class="tagline">Your Intelligent Document Assistant</p>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="sahayak-main">
+        
+        <!-- Welcome Section -->
+        <section id="welcome-section" class="section">
+            <div class="welcome-content">
+                <div class="feature-icon">📋</div>
+                <h2>Document Compliance Checker</h2>
+                <p>Sahayak analyzes your document for compliance issues using intelligent validation rules. Get Grammarly-like feedback with precise highlighting and auto-fix suggestions.</p>
+                
+                <button id="scan-document" class="primary-button">
+                    <span class="button-icon">🔍</span>
+                    Scan Document
+                </button>
+            </div>
+        </section>
+
+        <!-- Scanning Section -->
+        <section id="scanning-section" class="section hidden">
+            <div class="scanning-animation">
+                <div class="loader"></div>
+                <h3>Analyzing Document...</h3>
+                <p>Sahayak is checking your document against compliance rules</p>
+            </div>
+        </section>
+
+        <!-- Results Section -->
+        <section id="results-section" class="section hidden">
+            <div class="results-header">
+                <h3>Analysis Results</h3>
+                <div class="results-summary">
+                    <span id="total-issues" class="issue-count">0 issues found</span>
+                    <button id="clear-highlights" class="secondary-button">Clear Highlights</button>
+                </div>
+            </div>
+
+            <!-- Error Categories -->
+            <div class="error-categories">
+                
+                <!-- Critical Issues -->
+                <div id="critical-category" class="error-category">
+                    <div class="category-header critical">
+                        <span class="category-icon">🚨</span>
+                        <h4>Critical Issues</h4>
+                        <span id="critical-count" class="count">0</span>
+                    </div>
+                    <div id="critical-list" class="error-list"></div>
+                </div>
+
+                <!-- Warning Issues -->
+                <div id="warning-category" class="error-category">
+                    <div class="category-header warning">
+                        <span class="category-icon">⚠️</span>
+                        <h4>Formatting Issues</h4>
+                        <span id="warning-count" class="count">0</span>
+                    </div>
+                    <div id="warning-list" class="error-list"></div>
+                </div>
+
+                <!-- Suggestions -->
+                <div id="suggestion-category" class="error-category">
+                    <div class="category-header suggestion">
+                        <span class="category-icon">💡</span>
+                        <h4>Suggestions</h4>
+                        <span id="suggestion-count" class="count">0</span>
+                    </div>
+                    <div id="suggestion-list" class="error-list"></div>
+                </div>
+
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <button id="fix-all" class="primary-button">
+                    <span class="button-icon">🛠️</span>
+                    Fix All Issues
+                </button>
+                <button id="rescan" class="secondary-button">
+                    <span class="button-icon">🔄</span>
+                    Rescan Document
+                </button>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Error Card Popup -->
+    <div id="error-card" class="error-card hidden">
+        <div class="error-card-header">
+            <span id="error-type" class="error-type-badge">Font Error</span>
+            <button id="close-error-card" class="close-btn">×</button>
+        </div>
+        <div class="error-card-content">
+            <h4 id="error-title">Error Title</h4>
+            <p id="error-description">Error description goes here</p>
+            <div class="error-suggestion">
+                <strong>Suggestion:</strong>
+                <span id="error-suggestion">Suggestion text</span>
+            </div>
+        </div>
+        <div class="error-card-actions">
+            <button id="fix-error" class="fix-button">Fix it</button>
+            <button id="ignore-error" class="ignore-button">Ignore</button>
+        </div>
+    </div>
+
+    <!-- Embedded JavaScript -->
+    <script>
+        // Sahayak - Your Intelligent Document Assistant
+        // Main JavaScript with validation rules and Grammarly-like functionality
+
+        class SahayakDocumentAnalyzer {
+            constructor() {
+                this.errors = [];
+                this.highlightedRanges = [];
+                this.currentErrorCard = null;
+                this.isScanning = false;
+                
+                // Error color mapping
+                this.errorColors = {
+                    'CRITICAL': '#FF6B6B',
+                    'WARNING': '#FFD93D', 
+                    'SUGGESTION': '#74C0FC',
+                    'FONT_ERROR': '#FF8E53',
+                    'FORMAT_ERROR': '#845EC2'
+                };
+                
+                this.initializeEventListeners();
+            }
+
+            initializeEventListeners() {
+                document.getElementById('scan-document').addEventListener('click', () => this.scanDocument());
+                document.getElementById('clear-highlights').addEventListener('click', () => this.clearHighlights());
+                document.getElementById('fix-all').addEventListener('click', () => this.fixAllErrors());
+                document.getElementById('rescan').addEventListener('click', () => this.scanDocument());
+                document.getElementById('close-error-card').addEventListener('click', () => this.hideErrorCard());
+                document.getElementById('fix-error').addEventListener('click', () => this.fixCurrentError());
+                document.getElementById('ignore-error').addEventListener('click', () => this.ignoreCurrentError());
+            }
+
+            async scanDocument() {
+                if (this.isScanning) return;
+                
+                this.isScanning = true;
+                this.showSection('scanning-section');
+                this.clearHighlights();
+                this.errors = [];
+
+                try {
+                    // Extract document data
+                    const documentData = await this.extractDocumentData();
+                    
+                    // Run all validation rules
+                    await this.runValidationRules(documentData);
+                    
+                    // Apply highlights and show results
+                    await this.highlightErrors();
+                    this.displayResults();
+                    this.showSection('results-section');
+                    
+                } catch (error) {
+                    console.error('Error scanning document:', error);
+                    alert('Error scanning document. Please try again.');
+                    this.showSection('welcome-section');
+                } finally {
+                    this.isScanning = false;
+                }
+            }
+
+            async extractDocumentData() {
+                return await Word.run(async (context) => {
+                    // Load document structure
+                    const body = context.document.body;
+                    const paragraphs = body.paragraphs;
+                    const tables = body.tables;
+                    
+                    // Load properties
+                    paragraphs.load("text,font,alignment,style,spaceAfter,spaceBefore,lineSpacing");
+                    tables.load("*");
+                    body.load("text");
+                    
+                    await context.sync();
+                    
+                    return {
+                        paragraphs: paragraphs.items,
+                        tables: tables.items,
+                        fullText: body.text,
+                        documentLength: body.text.length
+                    };
+                });
+            }
+
+            async runValidationRules(documentData) {
+                // Font validation rules
+                this.validateFonts(documentData);
+                
+                // Format validation rules
+                this.validateFormatting(documentData);
+                
+                // Content validation rules
+                this.validateContent(documentData);
+                
+                // Number validation rules
+                this.validateNumbers(documentData);
+                
+                // Date validation rules
+                this.validateDates(documentData);
+            }
+
+            validateFonts(data) {
+                data.paragraphs.forEach((para, index) => {
+                    const text = para.text.trim();
+                    if (!text) return;
+
+                    // Rule 1: Font family should be Calibri
+                    if (para.font.name !== 'Calibri') {
+                        this.addError({
+                            type: 'FONT_ERROR',
+                            category: 'CRITICAL',
+                            title: 'Incorrect Font Family',
+                            description: `Font should be Calibri, found "${para.font.name}"`,
+                            location: { paragraphIndex: index, type: 'paragraph' },
+                            rule: 'Font family must be Calibri',
+                            autoFixable: true,
+                            fix: { fontName: 'Calibri' }
+                        });
+                    }
+
+                    // Rule 2: Font size validation
+                    const fontSize = para.font.size;
+                    let expectedSize = this.getExpectedFontSize(text, para.style);
+                    
+                    if (expectedSize && fontSize !== expectedSize) {
+                        this.addError({
+                            type: 'FONT_ERROR',
+                            category: 'CRITICAL',
+                            title: 'Incorrect Font Size',
+                            description: `Expected ${expectedSize}pt, found ${fontSize}pt`,
+                            location: { paragraphIndex: index, type: 'paragraph' },
+                            rule: this.getFontSizeRule(text, para.style),
+                            autoFixable: true,
+                            fix: { fontSize: expectedSize }
+                        });
+                    }
+
+                    // Rule 3: Line spacing should be 1.15
+                    if (para.lineSpacing !== 1.15) {
+                        this.addError({
+                            type: 'FORMAT_ERROR',
+                            category: 'WARNING',
+                            title: 'Incorrect Line Spacing',
+                            description: `Line spacing should be 1.15, found ${para.lineSpacing}`,
+                            location: { paragraphIndex: index, type: 'paragraph' },
+                            rule: 'Line spacing should always be 1.15',
+                            autoFixable: true,
+                            fix: { lineSpacing: 1.15 }
+                        });
+                    }
+                });
+            }
+
+            validateFormatting(data) {
+                data.paragraphs.forEach((para, index) => {
+                    const text = para.text.trim();
+                    if (!text) return;
+
+                    // Rule 4: Capitalization rules
+                    this.validateCapitalization(text, index);
+                    
+                    // Rule 5: Spacing rules (3pt for headings)
+                    if (this.isHeading(text, para.style)) {
+                        if (para.spaceAfter !== 3) {
+                            this.addError({
+                                type: 'FORMAT_ERROR',
+                                category: 'WARNING',
+                                title: 'Incorrect Heading Spacing',
+                                description: `Headings should have 3pt spacing after, found ${para.spaceAfter}pt`,
+                                location: { paragraphIndex: index, type: 'paragraph' },
+                                rule: 'Headings should have 3pt spacing',
+                                autoFixable: true,
+                                fix: { spaceAfter: 3 }
+                            });
+                        }
+                    }
+
+                    // Rule 6: Slash spacing (space before and after '/')
+                    this.validateSlashSpacing(text, index);
+                });
+            }
+
+            validateContent(data) {
+                data.paragraphs.forEach((para, index) => {
+                    const text = para.text.trim();
+                    if (!text) return;
+
+                    // Rule 7: Prefix usage (no Mr., Miss, Ms.)
+                    this.validatePrefixUsage(text, index);
+                    
+                    // Rule 8: Acronym usage
+                    this.validateAcronymUsage(text, index);
+                    
+                    // Rule 9: Issue numbering
+                    this.validateIssueNumbering(text, index);
+                    
+                    // Rule 10: Punctuation consistency
+                    this.validatePunctuation(text, index);
+                });
+            }
+
+            validateNumbers(data) {
+                data.paragraphs.forEach((para, index) => {
+                    const text = para.text.trim();
+                    if (!text) return;
+
+                    // Rule 11: Numbers 1-10 should be written in words
+                    this.validateNumberRepresentation(text, index);
+                    
+                    // Rule 12: Currency should have INR prefix
+                    this.validateCurrencyFormat(text, index);
+                    
+                    // Rule 13: Comma usage in numbers
+                    this.validateCommaUsage(text, index);
+                });
+            }
+
+            validateDates(data) {
+                data.paragraphs.forEach((para, index) => {
+                    const text = para.text.trim();
+                    if (!text) return;
+
+                    // Rule 14: Date format should be MMM, DD YYYY
+                    this.validateDateFormat(text, index);
+                    
+                    // Rule 15: Expected closure dates should not be weekends
+                    this.validateClosureDates(text, index);
+                });
+            }
+
+            // Helper methods for validation rules
+
+            getExpectedFontSize(text, style) {
+                if (this.isReportTitle(text)) return 20;
+                if (this.isHeading(text, style)) return 16;
+                if (this.isSubHeading(text, style)) return 13;
+                return 11; // Content
+            }
+
+            getFontSizeRule(text, style) {
+                if (this.isReportTitle(text)) return 'Report title should be 20pt';
+                if (this.isHeading(text, style)) return 'Headings should be 16pt';
+                if (this.isSubHeading(text, style)) return 'Sub-headings should be 13pt';
+                return 'Content should be 11pt';
+            }
+
+            isReportTitle(text) {
+                return text.includes('INTERNAL AUDIT') || text.includes('Report Number:');
+            }
+
+            isHeading(text, style) {
+                const headings = ['Executive Summary', 'Detailed Report', 'Appendix A'];
+                return headings.some(h => text.includes(h)) || style === 'Heading1';
+            }
+
+            isSubHeading(text, style) {
+                const subHeadings = ['Report Rating', 'Functional Overview', 'Audit Objective', 
+                                   'Audit Scope', 'Scope Limitations', 'Audit Profile', 
+                                   'Summary of Issues', 'Control Rating', 'Management Action Grade'];
+                return subHeadings.some(sh => text.includes(sh)) || style === 'Heading2';
+            }
+
+            validateCapitalization(text, index) {
+                // Check for team/policy capitalization
+                const teamPolicyPattern = /(\w+)\s+(team|policy)/gi;
+                const matches = text.matchAll(teamPolicyPattern);
+                
+                for (const match of matches) {
+                    const [fullMatch, firstWord, lastWord] = match;
+                    if (firstWord[0] !== firstWord[0].toUpperCase() || lastWord !== lastWord.toLowerCase()) {
+                        this.addError({
+                            type: 'FORMAT_ERROR',
+                            category: 'WARNING',
+                            title: 'Incorrect Capitalization',
+                            description: `"${fullMatch}" should be "${firstWord.charAt(0).toUpperCase() + firstWord.slice(1).toLowerCase()} ${lastWord.toLowerCase()}"`,
+                            location: { paragraphIndex: index, type: 'paragraph' },
+                            rule: 'First word capitalized, team/policy lowercase',
+                            autoFixable: true
+                        });
+                    }
+                }
+
+                // Check for Board capitalization
+                if (text.includes('board') && !text.includes('Board')) {
+                    this.addError({
+                        type: 'FORMAT_ERROR',
+                        category: 'WARNING',
+                        title: 'Board Capitalization',
+                        description: '"Board" should always be capitalized',
+                        location: { paragraphIndex: index, type: 'paragraph' },
+                        rule: 'Board should always be capitalized',
+                        autoFixable: true
+                    });
+                }
+            }
+
+            validateSlashSpacing(text, index) {
+                const slashPattern = /\w\/\w/g;
+                if (slashPattern.test(text)) {
+                    this.addError({
+                        type: 'FORMAT_ERROR',
+                        category: 'SUGGESTION',
+                        title: 'Missing Slash Spacing',
+                        description: 'Add spaces before and after "/" (e.g., CEO / CFO)',
+                        location: { paragraphIndex: index, type: 'paragraph' },
+                        rule: 'Add space before and after usage of "/"',
+                        autoFixable: true
+                    });
+                }
+            }
+
+            validatePrefixUsage(text, index) {
+                const prefixPattern = /(Mr\.|Miss\.|Ms\.|Mrs\.)\s+\w+/g;
+                if (prefixPattern.test(text)) {
+                    this.addError({
+                        type: 'FORMAT_ERROR',
+                        category: 'WARNING',
+                        title: 'Prefix Usage',
+                        description: 'Remove prefixes (Mr., Miss, Ms.) before names',
+                        location: { paragraphIndex: index, type: 'paragraph' },
+                        rule: 'Don\'t use prefix before names',
+                        autoFixable: true
+                    });
+                }
+            }
+
+            validateAcronymUsage(text, index) {
+                // Check for undefined acronyms
+                const acronymPattern = /\b[A-Z]{2,}\b/g;
+                const matches = text.match(acronymPattern);
+                if (matches) {
+                    matches.forEach(acronym => {
+                        if (!this.isKnownAcronym(acronym)) {
+                            this.addError({
+                                type: 'FORMAT_ERROR',
+                                category: 'SUGGESTION',
+                                title: 'Undefined Acronym',
+                                description: `Acronym "${acronym}" should be defined on first use`,
+                                location: { paragraphIndex: index, type: 'paragraph' },
+                                rule: 'Define acronyms at first use',
+                                autoFixable: false
+                            });
+                        }
+                    });
+                }
+            }
+
+            validateIssueNumbering(text, index) {
+                const issuePattern = /([HML])\.(\d+)\.(\d+)/g;
+                const matches = text.matchAll(issuePattern);
+                
+                for (const match of matches) {
+                    const [fullMatch, category, scope, sequence] = match;
+                    if (!this.isValidIssueNumber(category, scope, sequence)) {
+                        this.addError({
+                            type: 'FORMAT_ERROR',
+                            category: 'WARNING',
+                            title: 'Invalid Issue Numbering',
+                            description: `Issue number "${fullMatch}" doesn't follow correct sequence`,
+                            location: { paragraphIndex: index, type: 'paragraph' },
+                            rule: 'Issues should follow H.1.1, M.1.1, L.1.1 sequence',
+                            autoFixable: false
+                        });
+                    }
+                }
+            }
+
+            validatePunctuation(text, index) {
+                // Check for missing punctuation at end of sentences
+                const sentences = text.split(/[.!?]+/);
+                sentences.forEach(sentence => {
+                    if (sentence.trim() && !sentence.trim().match(/[.!?]$/)) {
+                        this.addError({
+                            type: 'FORMAT_ERROR',
+                            category: 'SUGGESTION',
+                            title: 'Missing Punctuation',
+                            description: 'Consider adding proper punctuation',
+                            location: { paragraphIndex: index, type: 'paragraph' },
+                            rule: 'Maintain consistent punctuation',
+                            autoFixable: false
+                        });
+                    }
+                });
+            }
+
+            validateNumberRepresentation(text, index) {
+                // Numbers 1-10 should be written in words
+                const numberPattern = /\b(\d+)\b/g;
+                const matches = text.matchAll(numberPattern);
+                
+                for (const match of matches) {
+                    const [fullMatch, number] = match;
+                    const num = parseInt(number);
+                    if (num >= 1 && num <= 10 && !this.isYearOrException(text, number)) {
+                        this.addError({
+                            type: 'FORMAT_ERROR',
+                            category: 'SUGGESTION',
+                            title: 'Number Representation',
+                            description: `Number "${number}" should be written in words`,
+                            location: { paragraphIndex: index, type: 'paragraph' },
+                            rule: 'Numbers 1-10 should be written in words',
+                            autoFixable: true
+                        });
+                    }
+                }
+            }
+
+            validateCurrencyFormat(text, index) {
+                const currencyPattern = /(?<!INR\s)(\d+(?:\.\d+)?)\s*(lakhs?|crores?)/gi;
+                if (currencyPattern.test(text)) {
+                    this.addError({
+                        type: 'FORMAT_ERROR',
+                        category: 'WARNING',
+                        title: 'Missing INR Prefix',
+                        description: 'Currency amounts should have INR prefix',
+                        location: { paragraphIndex: index, type: 'paragraph' },
+                        rule: 'Use INR prefix before amounts',
+                        autoFixable: true
+                    });
+                }
+            }
+
+            validateCommaUsage(text, index) {
+                const numberPattern = /\b\d{4,}\b/g;
+                const matches = text.match(numberPattern);
+                if (matches) {
+                    matches.forEach(number => {
+                        if (!number.includes(',')) {
+                            this.addError({
+                                type: 'FORMAT_ERROR',
+                                category: 'SUGGESTION',
+                                title: 'Missing Comma in Numbers',
+                                description: `Number "${number}" should use comma separators`,
+                                location: { paragraphIndex: index, type: 'paragraph' },
+                                rule: 'Use commas in large numbers',
+                                autoFixable: true
+                            });
+                        }
+                    });
+                }
+            }
+
+            validateDateFormat(text, index) {
+                const datePattern = /\b(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4})\b/g;
+                if (datePattern.test(text)) {
+                    this.addError({
+                        type: 'FORMAT_ERROR',
+                        category: 'WARNING',
+                        title: 'Incorrect Date Format',
+                        description: 'Dates should be in MMM, DD YYYY format',
+                        location: { paragraphIndex: index, type: 'paragraph' },
+                        rule: 'Use MMM, DD YYYY date format',
+                        autoFixable: true
+                    });
+                }
+            }
+
+            validateClosureDates(text, index) {
+                if (text.toLowerCase().includes('expected closure date')) {
+                    const datePattern = /(\w+\s+\d{1,2},\s+\d{4})/g;
+                    const matches = text.match(datePattern);
+                    if (matches) {
+                        matches.forEach(dateStr => {
+                            if (this.isWeekend(dateStr)) {
+                                this.addError({
+                                    type: 'FORMAT_ERROR',
+                                    category: 'WARNING',
+                                    title: 'Weekend Closure Date',
+                                    description: `Expected closure date "${dateStr}" falls on weekend`,
+                                    location: { paragraphIndex: index, type: 'paragraph' },
+                                    rule: 'Closure dates should not be weekends',
+                                    autoFixable: false
+                                });
+                            }
+                        });
+                    }
+                }
+            }
+
+            // Helper methods
+
+            isKnownAcronym(acronym) {
+                const knownAcronyms = ['CEO', 'CFO', 'CTO', 'COO', 'CR', 'MAG', 'DOA', 'TSR', 'FAR', 'DVR', 'NTP', 'CCTV'];
+                return knownAcronyms.includes(acronym);
+            }
+
+            isValidIssueNumber(category, scope, sequence) {
+                // Basic validation - should start with 1.1 for each category
+                return true; // Simplified for now
+            }
+
+            isYearOrException(text, number) {
+                // Check if number is part of a year or other exception
+                return text.includes(number + '24') || text.includes(number + '25') || text.includes('20' + number);
+            }
+
+            isWeekend(dateStr) {
+                const date = new Date(dateStr);
+                const dayOfWeek = date.getDay();
+                return dayOfWeek === 0 || dayOfWeek === 6; // Sunday or Saturday
+            }
+
+            // Error management methods
+
+            addError(error) {
+                error.id = this.generateErrorId();
+                this.errors.push(error);
+            }
+
+            generateErrorId() {
+                return 'error_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            }
+
+            // Highlighting methods
+
+            async highlightErrors() {
+                await Word.run(async (context) => {
+                    // Clear existing highlights
+                    await this.clearHighlights();
+
+                    for (const error of this.errors) {
+                        try {
+                            const paragraph = context.document.body.paragraphs.getByIndex(error.location.paragraphIndex);
+                            paragraph.load("text");
+                            await context.sync();
+
+                            // Apply temporary highlighting
+                            const range = paragraph.getRange();
+                            range.font.highlightColor = this.getErrorHighlightColor(error.category);
+                            
+                            // Store for later cleanup
+                            this.highlightedRanges.push({
+                                range: range,
+                                errorId: error.id,
+                                category: error.category
+                            });
+
+                        } catch (err) {
+                            console.warn('Could not highlight error:', err);
+                        }
+                    }
+
+                    await context.sync();
+                });
+            }
+
+            getErrorHighlightColor(category) {
+                const colors = {
+                    'CRITICAL': '#FFEBEE',
+                    'WARNING': '#FFF8E1', 
+                    'SUGGESTION': '#E3F2FD'
+                };
+                return colors[category] || '#F5F5F5';
+            }
+
+            async clearHighlights() {
+                await Word.run(async (context) => {
+                    this.highlightedRanges.forEach(item => {
+                        try {
+                            item.range.font.highlightColor = null;
+                        } catch (err) {
+                            console.warn('Could not clear highlight:', err);
+                        }
+                    });
+                    
+                    this.highlightedRanges = [];
+                    await context.sync();
+                });
+            }
+
+            // UI methods
+
+            showSection(sectionId) {
+                document.querySelectorAll('.section').forEach(section => {
+                    section.classList.add('hidden');
+                });
+                document.getElementById(sectionId).classList.remove('hidden');
+            }
+
+            displayResults() {
+                const totalIssues = this.errors.length;
+                const criticalCount = this.errors.filter(e => e.category === 'CRITICAL').length;
+                const warningCount = this.errors.filter(e => e.category === 'WARNING').length;
+                const suggestionCount = this.errors.filter(e => e.category === 'SUGGESTION').length;
+
+                // Update counters
+                document.getElementById('total-issues').textContent = `${totalIssues} issues found`;
+                document.getElementById('critical-count').textContent = criticalCount;
+                document.getElementById('warning-count').textContent = warningCount;
+                document.getElementById('suggestion-count').textContent = suggestionCount;
+
+                // Populate error lists
+                this.populateErrorList('critical-list', this.errors.filter(e => e.category === 'CRITICAL'));
+                this.populateErrorList('warning-list', this.errors.filter(e => e.category === 'WARNING'));
+                this.populateErrorList('suggestion-list', this.errors.filter(e => e.category === 'SUGGESTION'));
+
+                // Hide empty categories
+                document.getElementById('critical-category').style.display = criticalCount > 0 ? 'block' : 'none';
+                document.getElementById('warning-category').style.display = warningCount > 0 ? 'block' : 'none';
+                document.getElementById('suggestion-category').style.display = suggestionCount > 0 ? 'block' : 'none';
+            }
+
+            populateErrorList(listId, errors) {
+                const list = document.getElementById(listId);
+                list.innerHTML = '';
+
+                errors.forEach(error => {
+                    const errorItem = document.createElement('div');
+                    errorItem.className = 'error-item';
+                    errorItem.innerHTML = `
+                        <div class="error-title">${error.title}</div>
+                        <div class="error-description">${error.description}</div>
+                        <div class="error-location">Paragraph ${error.location.paragraphIndex + 1}</div>
+                    `;
+                    
+                    errorItem.addEventListener('click', () => this.showErrorCard(error));
+                    list.appendChild(errorItem);
+                });
+            }
+
+            showErrorCard(error) {
+                this.currentErrorCard = error;
+                
+                document.getElementById('error-type').textContent = error.category;
+                document.getElementById('error-title').textContent = error.title;
+                document.getElementById('error-description').textContent = error.description;
+                document.getElementById('error-suggestion').textContent = error.rule;
+                
+                document.getElementById('error-card').classList.remove('hidden');
+            }
+
+            hideErrorCard() {
+                document.getElementById('error-card').classList.add('hidden');
+                this.currentErrorCard = null;
+            }
+
+            async fixCurrentError() {
+                if (!this.currentErrorCard) return;
+
+                try {
+                    await this.fixSingleError(this.currentErrorCard);
+                    this.hideErrorCard();
+                    this.scanDocument(); // Re-scan to update results
+                } catch (error) {
+                    console.error('Error fixing issue:', error);
+                    alert('Could not fix this issue automatically.');
+                }
+            }
+
+            ignoreCurrentError() {
+                if (!this.currentErrorCard) return;
+                
+                // Remove from errors list
+                this.errors = this.errors.filter(e => e.id !== this.currentErrorCard.id);
+                this.hideErrorCard();
+                this.displayResults();
+            }
+
+            async fixAllErrors() {
+                if (this.errors.length === 0) return;
+
+                try {
+                    const fixableErrors = this.errors.filter(e => e.autoFixable);
+                    for (const error of fixableErrors) {
+                        await this.fixSingleError(error);
+                    }
+                    this.scanDocument(); // Re-scan to update results
+                } catch (error) {
+                    console.error('Error fixing issues:', error);
+                    alert('Could not fix all issues automatically.');
+                }
+            }
+
+            async fixSingleError(error) {
+                await Word.run(async (context) => {
+                    const paragraph = context.document.body.paragraphs.getByIndex(error.location.paragraphIndex);
+                    
+                    if (error.fix) {
+                        if (error.fix.fontName) {
+                            paragraph.font.name = error.fix.fontName;
+                        }
+                        if (error.fix.fontSize) {
+                            paragraph.font.size = error.fix.fontSize;
+                        }
+                        if (error.fix.lineSpacing) {
+                            paragraph.lineSpacing = error.fix.lineSpacing;
+                        }
+                        if (error.fix.spaceAfter) {
+                            paragraph.spaceAfter = error.fix.spaceAfter;
+                        }
+                    }
+                    
+                    await context.sync();
+                });
+            }
+        }
+
+        // Initialize Office.js
+        Office.onReady((info) => {
+            if (info.host === Office.HostType.Word) {
+                // Initialize Sahayak
+                window.sahayakAnalyzer = new SahayakDocumentAnalyzer();
+                console.log('Sahayak Document Assistant initialized successfully!');
+            }
+        });
+    </script>
+</body>
+</html>

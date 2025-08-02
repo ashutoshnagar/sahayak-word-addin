@@ -77,7 +77,7 @@ dist
 
 # Gatsby files
 .cache/
-public
+# public - Keep for Word add-in files
 
 # Storybook build outputs
 .out
