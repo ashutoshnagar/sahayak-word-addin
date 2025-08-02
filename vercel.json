@@ -1,14 +1,10 @@
 {
   "version": 2,
   "name": "sahayak-word-addin",
-  "cleanUrls": true,
-  "trailingSlash": false,
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/public/$1"
-    }
-  ],
+  "public": true,
+  "github": {
+    "silent": true
+  },
   "headers": [
     {
       "source": "/(.*)",
@@ -20,14 +16,6 @@
         {
           "key": "Content-Security-Policy",
           "value": "frame-ancestors 'self' https://*.office.com https://*.microsoft.com https://*.office365.com https://*.sharepoint.com https://*.officeapps.live.com"
-        },
-        {
-          "key": "X-Content-Type-Options",
-          "value": "nosniff"
-        },
-        {
-          "key": "Referrer-Policy",
-          "value": "strict-origin-when-cross-origin"
         },
         {
           "key": "Access-Control-Allow-Origin",
@@ -49,28 +37,6 @@
         {
           "key": "Content-Type",
           "value": "application/xml"
-        },
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=86400"
-        }
-      ]
-    },
-    {
-      "source": "/taskpane.html",
-      "headers": [
-        {
-          "key": "Content-Type",
-          "value": "text/html"
-        }
-      ]
-    },
-    {
-      "source": "/commands.html",
-      "headers": [
-        {
-          "key": "Content-Type",
-          "value": "text/html"
         }
       ]
     }
