@@ -1,0 +1,38 @@
+{
+  "name": "sahayak-word-addin",
+  "version": "1.0.0",
+  "description": "Sahayak - Your Intelligent Document Assistant. Grammarly-like compliance checker for audit reports and documents.",
+  "main": "public/taskpane.html",
+  "scripts": {
+    "start": "npx http-server public -p 3000 -c-1",
+    "dev": "npx http-server public -p 3000 -c-1 --cors",
+    "build": "echo 'No build step needed for static files'",
+    "deploy": "vercel --prod"
+  },
+  "keywords": [
+    "word-addin",
+    "office-js",
+    "document-analysis",
+    "compliance-checker",
+    "audit-review",
+    "grammarly-like",
+    "sahayak",
+    "intelligent-assistant"
+  ],
+  "author": "Ashutosh Nagar",
+  "license": "MIT",
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ashutoshnagar/sahayak-word-addin.git"
+  },
+  "homepage": "https://sahayak-word-addin.vercel.app",
+  "bugs": {
+    "url": "https://github.com/ashutoshnagar/sahayak-word-addin/issues"
+  }
+}
