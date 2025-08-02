@@ -7,33 +7,6 @@
       "use": "@vercel/static"
     }
   ],
-  "routes": [
-    {
-      "src": "/manifest.xml",
-      "dest": "/public/manifest.xml",
-      "headers": {
-        "Content-Type": "application/xml"
-      }
-    },
-    {
-      "src": "/taskpane.html",
-      "dest": "/public/taskpane.html",
-      "headers": {
-        "Content-Type": "text/html"
-      }
-    },
-    {
-      "src": "/commands.html",
-      "dest": "/public/commands.html",
-      "headers": {
-        "Content-Type": "text/html"
-      }
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/public/$1"
-    }
-  ],
   "headers": [
     {
       "source": "/(.*)",
@@ -89,6 +62,10 @@
       "source": "/taskpane.html",
       "headers": [
         {
+          "key": "Content-Type",
+          "value": "text/html"
+        },
+        {
           "key": "X-Frame-Options",
           "value": "ALLOWALL"
         },
@@ -101,6 +78,10 @@
     {
       "source": "/commands.html",
       "headers": [
+        {
+          "key": "Content-Type",
+          "value": "text/html"
+        },
         {
           "key": "X-Frame-Options",
           "value": "ALLOWALL"
