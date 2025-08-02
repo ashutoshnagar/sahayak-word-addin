@@ -17,15 +17,15 @@
   <Description DefaultValue="Your Intelligent Document Assistant - AI-powered compliance checker with Grammarly-like experience for audit reports and documents." />
   
   <!-- Icon URLs -->
-  <IconUrl DefaultValue="https://sahayak-word-addin.vercel.app/assets/sahayak-32.png" />
-  <HighResolutionIconUrl DefaultValue="https://sahayak-word-addin.vercel.app/assets/sahayak-64.png" />
+  <IconUrl DefaultValue="https://sahayak-word-addin-f8jy.vercel.app/assets/sahayak-32.png" />
+  <HighResolutionIconUrl DefaultValue="https://sahayak-word-addin-f8jy.vercel.app/assets/sahayak-64.png" />
   
   <!-- Support URL -->
   <SupportUrl DefaultValue="https://github.com/ashutoshnagar/sahayak-word-addin" />
   
   <!-- App Domains -->
   <AppDomains>
-    <AppDomain>https://sahayak-word-addin.vercel.app</AppDomain>
+    <AppDomain>https://sahayak-word-addin-f8jy.vercel.app</AppDomain>
   </AppDomains>
   
   <!-- Begin Common properties -->
@@ -41,7 +41,7 @@
   
   <!-- Begin Add-in Commands Mode integration -->
   <DefaultSettings>
-    <SourceLocation DefaultValue="https://sahayak-word-addin.vercel.app/taskpane.html" />
+    <SourceLocation DefaultValue="https://sahayak-word-addin-f8jy.vercel.app/taskpane.html" />
   </DefaultSettings>
   
   <Permissions>ReadWriteDocument</Permissions>
@@ -106,14 +106,14 @@
     <!-- Resources -->
     <Resources>
       <bt:Images>
-        <bt:Image id="Icon.16x16" DefaultValue="https://sahayak-word-addin.vercel.app/assets/sahayak-16.png" />
-        <bt:Image id="Icon.32x32" DefaultValue="https://sahayak-word-addin.vercel.app/assets/sahayak-32.png" />
-        <bt:Image id="Icon.80x80" DefaultValue="https://sahayak-word-addin.vercel.app/assets/sahayak-80.png" />
+        <bt:Image id="Icon.16x16" DefaultValue="https://sahayak-word-addin-f8jy.vercel.app/assets/sahayak-16.png" />
+        <bt:Image id="Icon.32x32" DefaultValue="https://sahayak-word-addin-f8jy.vercel.app/assets/sahayak-32.png" />
+        <bt:Image id="Icon.80x80" DefaultValue="https://sahayak-word-addin-f8jy.vercel.app/assets/sahayak-80.png" />
       </bt:Images>
       <bt:Urls>
         <bt:Url id="GetStarted.LearnMoreUrl" DefaultValue="https://github.com/ashutoshnagar/sahayak-word-addin" />
-        <bt:Url id="Commands.Url" DefaultValue="https://sahayak-word-addin.vercel.app/commands.html" />
-        <bt:Url id="Taskpane.Url" DefaultValue="https://sahayak-word-addin.vercel.app/taskpane.html" />
+        <bt:Url id="Commands.Url" DefaultValue="https://sahayak-word-addin-f8jy.vercel.app/commands.html" />
+        <bt:Url id="Taskpane.Url" DefaultValue="https://sahayak-word-addin-f8jy.vercel.app/taskpane.html" />
       </bt:Urls>
       <bt:ShortStrings>
         <bt:String id="GetStarted.Title" DefaultValue="Get started with Sahayak!" />
