@@ -196,95 +196,167 @@
             font-size: 0.9rem;
         }
         
-        /* Error Categories */
-        .error-categories {
+        /* Grammarly-style Issue Groups */
+        .issue-groups {
             margin-bottom: 30px;
         }
         
-        .error-category {
-            margin-bottom: 25px;
-            border-radius: 12px;
-            overflow: hidden;
-            border: 1px solid #e9ecef;
+        .main-section {
+            margin-bottom: 30px;
         }
         
-        .category-header {
+        .section-header {
             display: flex;
             align-items: center;
-            gap: 10px;
-            padding: 15px 20px;
-            font-weight: 600;
-            cursor: pointer;
+            gap: 12px;
+            padding: 16px 20px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            margin-bottom: 12px;
             transition: all 0.2s ease;
         }
         
-        .category-header.critical {
+        .section-header.corrections {
             background: #fff5f5;
-            color: #c53030;
-            border-left: 4px solid #fc8181;
+            color: #dc2626;
+            border: 1px solid #fecaca;
         }
         
-        .category-header.warning {
-            background: #fffbeb;
-            color: #d69e2e;
-            border-left: 4px solid #f6e05e;
+        .section-header.refinements {
+            background: #eff6ff;
+            color: #2563eb;
+            border: 1px solid #bfdbfe;
         }
         
-        .category-header.suggestion {
-            background: #f0fff4;
-            color: #38a169;
-            border-left: 4px solid #9ae6b4;
-        }
-        
-        .category-icon {
+        .section-icon {
             font-size: 1.2rem;
         }
         
-        .count {
+        .section-count {
             margin-left: auto;
-            background: rgba(255, 255, 255, 0.8);
-            padding: 4px 8px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #666;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .issue-types {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .issue-type-group {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: all 0.2s ease;
+        }
+        
+        .issue-type-group:hover {
+            border-color: #d1d5db;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .type-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            cursor: pointer;
+            background: #fafafa;
+            transition: all 0.2s ease;
+        }
+        
+        .type-header:hover {
+            background: #f5f5f5;
+        }
+        
+        .type-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .type-name {
+            font-weight: 600;
+            color: #374151;
+            font-size: 0.95rem;
+        }
+        
+        .type-count {
+            background: #e5e7eb;
+            color: #6b7280;
+            padding: 2px 8px;
             border-radius: 12px;
             font-size: 0.8rem;
-            font-weight: 700;
+            font-weight: 600;
         }
         
-        .error-list {
+        .expand-icon {
+            color: #9ca3af;
+            font-size: 0.8rem;
+            transition: transform 0.2s ease;
+        }
+        
+        .issue-type-group.expanded .expand-icon {
+            transform: rotate(90deg);
+        }
+        
+        .issue-instances {
+            display: none;
             padding: 0;
-        }
-        
-        .error-item {
-            padding: 15px 20px;
-            border-bottom: 1px solid #f1f3f4;
-            cursor: pointer;
-            transition: all 0.2s ease;
             background: white;
         }
         
-        .error-item:hover {
-            background: #f8f9fa;
+        .issue-type-group.expanded .issue-instances {
+            display: block;
         }
         
-        .error-item:last-child {
+        .issue-instance {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f3f4f6;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .issue-instance:hover {
+            background: #f9fafb;
+        }
+        
+        .issue-instance:last-child {
             border-bottom: none;
         }
         
-        .error-title {
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 5px;
-        }
-        
-        .error-description {
-            color: #666;
+        .instance-description {
+            color: #6b7280;
             font-size: 0.9rem;
-            line-height: 1.4;
+            margin-bottom: 4px;
         }
         
-        .error-location {
-            color: #999;
+        .instance-location {
+            color: #9ca3af;
             font-size: 0.8rem;
-            margin-top: 5px;
+        }
+        
+        /* Color-coded underline styles */
+        .underline-critical {
+            text-decoration: underline wavy;
+            text-decoration-color: #dc2626;
+        }
+        
+        .underline-warning {
+            text-decoration: underline dotted;
+            text-decoration-color: #f59e0b;
+        }
+        
+        .underline-suggestion {
+            text-decoration: underline solid;
+            text-decoration-color: #2563eb;
         }
         
         /* Action Buttons */
@@ -514,37 +586,27 @@
                 </div>
             </div>
 
-            <!-- Error Categories -->
-            <div class="error-categories">
+            <!-- Issue Groups - Grammarly Style -->
+            <div class="issue-groups">
                 
-                <!-- Critical Issues -->
-                <div id="critical-category" class="error-category">
-                    <div class="category-header critical">
-                        <span class="category-icon">🚨</span>
-                        <h4>Critical Issues</h4>
-                        <span id="critical-count" class="count">0</span>
+                <!-- Corrections Section -->
+                <div id="corrections-section" class="main-section">
+                    <div class="section-header corrections">
+                        <span class="section-icon">🔴</span>
+                        <h3>Corrections</h3>
+                        <span id="corrections-count" class="section-count">0</span>
                     </div>
-                    <div id="critical-list" class="error-list"></div>
+                    <div id="corrections-groups" class="issue-types"></div>
                 </div>
 
-                <!-- Warning Issues -->
-                <div id="warning-category" class="error-category">
-                    <div class="category-header warning">
-                        <span class="category-icon">⚠️</span>
-                        <h4>Formatting Issues</h4>
-                        <span id="warning-count" class="count">0</span>
+                <!-- Refinements Section -->
+                <div id="refinements-section" class="main-section">
+                    <div class="section-header refinements">
+                        <span class="section-icon">🔵</span>
+                        <h3>Refinements</h3>
+                        <span id="refinements-count" class="section-count">0</span>
                     </div>
-                    <div id="warning-list" class="error-list"></div>
-                </div>
-
-                <!-- Suggestions -->
-                <div id="suggestion-category" class="error-category">
-                    <div class="category-header suggestion">
-                        <span class="category-icon">💡</span>
-                        <h4>Suggestions</h4>
-                        <span id="suggestion-count" class="count">0</span>
-                    </div>
-                    <div id="suggestion-list" class="error-list"></div>
+                    <div id="refinements-groups" class="issue-types"></div>
                 </div>
 
             </div>
@@ -1268,57 +1330,191 @@
 
             displayResults() {
                 const totalIssues = this.errors.length;
-                const criticalCount = this.errors.filter(e => e.category === 'CRITICAL').length;
-                const warningCount = this.errors.filter(e => e.category === 'WARNING').length;
-                const suggestionCount = this.errors.filter(e => e.category === 'SUGGESTION').length;
-
-                // Update counters
+                
+                // Update total issues counter
                 document.getElementById('total-issues').textContent = `${totalIssues} issues found`;
-                document.getElementById('critical-count').textContent = criticalCount;
-                document.getElementById('warning-count').textContent = warningCount;
-                document.getElementById('suggestion-count').textContent = suggestionCount;
 
-                // Populate error lists
-                this.populateErrorList('critical-list', this.errors.filter(e => e.category === 'CRITICAL'));
-                this.populateErrorList('warning-list', this.errors.filter(e => e.category === 'WARNING'));
-                this.populateErrorList('suggestion-list', this.errors.filter(e => e.category === 'SUGGESTION'));
+                // Group errors by category and type
+                const groupedErrors = this.groupErrors(this.errors);
 
-                // Hide empty categories
-                document.getElementById('critical-category').style.display = criticalCount > 0 ? 'block' : 'none';
-                document.getElementById('warning-category').style.display = warningCount > 0 ? 'block' : 'none';
-                document.getElementById('suggestion-category').style.display = suggestionCount > 0 ? 'block' : 'none';
+                // Display corrections section
+                this.displayCorrections(groupedErrors.corrections);
+                
+                // Display refinements section
+                this.displayRefinements(groupedErrors.refinements);
+
+                // Show/hide sections based on content
+                document.getElementById('corrections-section').style.display = 
+                    groupedErrors.corrections.totalCount > 0 ? 'block' : 'none';
+                document.getElementById('refinements-section').style.display = 
+                    groupedErrors.refinements.totalCount > 0 ? 'block' : 'none';
             }
 
-            populateErrorList(listId, errors) {
-                const list = document.getElementById(listId);
-                list.innerHTML = '';
+            groupErrors(errors) {
+                const corrections = {
+                    totalCount: 0,
+                    groups: {}
+                };
+                
+                const refinements = {
+                    totalCount: 0,
+                    groups: {}
+                };
 
+                // Group errors by type and category
                 errors.forEach(error => {
-                    const errorItem = document.createElement('div');
-                    errorItem.className = 'error-item';
-                    errorItem.innerHTML = `
-                        <div class="error-title">${error.title}</div>
-                        <div class="error-description">${error.description}</div>
-                        <div class="error-location">Paragraph ${error.location.paragraphIndex + 1} • Click to navigate</div>
-                    `;
+                    const isCorrection = error.category === 'CRITICAL' || error.category === 'WARNING';
+                    const target = isCorrection ? corrections : refinements;
                     
-                    // Add click handler for navigation and error card
-                    errorItem.addEventListener('click', async () => {
-                        await this.navigateToError(error);
-                        this.showErrorCard(error);
-                    });
-
-                    // Add hover effects for better UX
-                    errorItem.addEventListener('mouseenter', () => {
-                        this.addTemporaryUnderline(error, true);
-                    });
-
-                    errorItem.addEventListener('mouseleave', () => {
-                        this.addTemporaryUnderline(error, false);
-                    });
+                    target.totalCount++;
                     
-                    list.appendChild(errorItem);
+                    // Group by error type
+                    const groupKey = this.getErrorGroupKey(error);
+                    if (!target.groups[groupKey]) {
+                        target.groups[groupKey] = {
+                            name: this.getErrorGroupName(error),
+                            errors: [],
+                            count: 0
+                        };
+                    }
+                    
+                    target.groups[groupKey].errors.push(error);
+                    target.groups[groupKey].count++;
                 });
+
+                return { corrections, refinements };
+            }
+
+            getErrorGroupKey(error) {
+                // Group similar error types together
+                if (error.type === 'FONT_ERROR') {
+                    if (error.title.includes('Font Family')) return 'font-family';
+                    if (error.title.includes('Font Size')) return 'font-size';
+                    return 'font-issues';
+                }
+                if (error.type === 'FORMAT_ERROR') {
+                    if (error.title.includes('Capitalization')) return 'capitalization';
+                    if (error.title.includes('Spacing')) return 'spacing';
+                    if (error.title.includes('Date Format')) return 'date-format';
+                    return 'formatting';
+                }
+                return error.type.toLowerCase();
+            }
+
+            getErrorGroupName(error) {
+                const groupKey = this.getErrorGroupKey(error);
+                const nameMap = {
+                    'font-family': 'Font Family Issues',
+                    'font-size': 'Font Size Issues',
+                    'font-issues': 'Font Issues',
+                    'capitalization': 'Capitalization Issues',
+                    'spacing': 'Spacing Issues',
+                    'date-format': 'Date Format Issues',
+                    'formatting': 'Formatting Issues',
+                    'format_error': 'Format Issues'
+                };
+                return nameMap[groupKey] || error.type.replace('_', ' ').toLowerCase();
+            }
+
+            displayCorrections(corrections) {
+                document.getElementById('corrections-count').textContent = corrections.totalCount;
+                const container = document.getElementById('corrections-groups');
+                container.innerHTML = '';
+
+                Object.entries(corrections.groups).forEach(([key, group]) => {
+                    const groupElement = this.createIssueTypeGroup(key, group, 'corrections');
+                    container.appendChild(groupElement);
+                });
+            }
+
+            displayRefinements(refinements) {
+                document.getElementById('refinements-count').textContent = refinements.totalCount;
+                const container = document.getElementById('refinements-groups');
+                container.innerHTML = '';
+
+                Object.entries(refinements.groups).forEach(([key, group]) => {
+                    const groupElement = this.createIssueTypeGroup(key, group, 'refinements');
+                    container.appendChild(groupElement);
+                });
+            }
+
+            createIssueTypeGroup(key, group, section) {
+                const groupDiv = document.createElement('div');
+                groupDiv.className = 'issue-type-group';
+                groupDiv.dataset.groupKey = key;
+
+                groupDiv.innerHTML = `
+                    <div class="type-header">
+                        <div class="type-info">
+                            <span class="type-name">${group.name}</span>
+                            <span class="type-count">${group.count}</span>
+                        </div>
+                        <span class="expand-icon">▶</span>
+                    </div>
+                    <div class="issue-instances">
+                        ${group.errors.map(error => `
+                            <div class="issue-instance" data-error-id="${error.id}">
+                                <div class="instance-description">${error.description}</div>
+                                <div class="instance-location">Paragraph ${error.location.paragraphIndex + 1} • Click to navigate</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+
+                // Add event listeners
+                const header = groupDiv.querySelector('.type-header');
+                header.addEventListener('click', () => {
+                    groupDiv.classList.toggle('expanded');
+                    this.toggleGroupHighlight(group.errors, groupDiv.classList.contains('expanded'));
+                });
+
+                // Add hover effect for entire group
+                header.addEventListener('mouseenter', () => {
+                    this.highlightErrorGroup(group.errors, true, section);
+                });
+
+                header.addEventListener('mouseleave', () => {
+                    this.highlightErrorGroup(group.errors, false, section);
+                });
+
+                // Add click handlers for individual instances
+                const instances = groupDiv.querySelectorAll('.issue-instance');
+                instances.forEach(instance => {
+                    const errorId = instance.dataset.errorId;
+                    const error = group.errors.find(e => e.id === errorId);
+                    
+                    if (error) {
+                        instance.addEventListener('click', async () => {
+                            await this.navigateToError(error);
+                            this.showErrorCard(error);
+                        });
+
+                        instance.addEventListener('mouseenter', () => {
+                            this.addTemporaryColoredUnderline(error, true);
+                        });
+
+                        instance.addEventListener('mouseleave', () => {
+                            this.addTemporaryColoredUnderline(error, false);
+                        });
+                    }
+                });
+
+                return groupDiv;
+            }
+
+            toggleGroupHighlight(errors, show) {
+                errors.forEach(error => {
+                    this.addTemporaryColoredUnderline(error, show);
+                });
+            }
+
+            highlightErrorGroup(errors, show, section) {
+                if (!show) {
+                    // Clear all highlights when mouse leaves
+                    errors.forEach(error => {
+                        this.addTemporaryColoredUnderline(error, false);
+                    });
+                }
             }
 
             showErrorCard(error) {
@@ -1482,6 +1678,85 @@
                     });
                 } catch (err) {
                     console.warn('Could not add temporary underline:', err);
+                }
+            }
+
+            // Add temporary color-coded underline highlighting for hover effects
+            async addTemporaryColoredUnderline(error, shouldUnderline) {
+                try {
+                    await Word.run(async (context) => {
+                        // Load all paragraphs first
+                        const paragraphs = context.document.body.paragraphs;
+                        paragraphs.load("text");
+                        await context.sync();
+                        
+                        // Check if paragraph index is valid
+                        if (error.location.paragraphIndex >= paragraphs.items.length) {
+                            console.warn(`Paragraph index ${error.location.paragraphIndex} is out of range`);
+                            return;
+                        }
+                        
+                        // Get the specific paragraph
+                        const paragraph = paragraphs.items[error.location.paragraphIndex];
+                        let targetRange;
+                        
+                        // Try to find specific text if available
+                        if (error.location.specificText) {
+                            try {
+                                const searchResults = paragraph.search(error.location.specificText, { 
+                                    matchCase: false, 
+                                    matchWholeWord: false 
+                                });
+                                searchResults.load("items");
+                                await context.sync();
+                                
+                                if (searchResults.items.length > 0) {
+                                    targetRange = searchResults.items[0];
+                                } else {
+                                    targetRange = paragraph.getRange();
+                                }
+                            } catch (searchErr) {
+                                console.warn('Search failed, using paragraph range:', searchErr);
+                                targetRange = paragraph.getRange();
+                            }
+                        } else {
+                            targetRange = paragraph.getRange();
+                        }
+
+                        // Apply or remove color-coded underlines based on error category
+                        if (shouldUnderline) {
+                            // Set underline style and color based on error category
+                            if (error.category === 'CRITICAL') {
+                                // Red wavy underline for critical issues
+                                targetRange.font.underline = 'Wavy';
+                                targetRange.font.underlineColor = '#dc2626'; // Red
+                                targetRange.font.highlightColor = '#fef2f2'; // Very light red background
+                            } else if (error.category === 'WARNING') {
+                                // Orange dotted underline for warnings
+                                targetRange.font.underline = 'Dotted';
+                                targetRange.font.underlineColor = '#f59e0b'; // Orange
+                                targetRange.font.highlightColor = '#fffbeb'; // Very light orange background
+                            } else if (error.category === 'SUGGESTION') {
+                                // Blue solid underline for suggestions
+                                targetRange.font.underline = 'Single';
+                                targetRange.font.underlineColor = '#2563eb'; // Blue
+                                targetRange.font.highlightColor = '#eff6ff'; // Very light blue background
+                            } else {
+                                // Default underline for other categories
+                                targetRange.font.underline = 'Single';
+                                targetRange.font.highlightColor = '#f9fafb'; // Very light gray background
+                            }
+                        } else {
+                            // Remove all formatting
+                            targetRange.font.underline = 'None';
+                            targetRange.font.underlineColor = null;
+                            targetRange.font.highlightColor = null;
+                        }
+                        
+                        await context.sync();
+                    });
+                } catch (err) {
+                    console.warn('Could not add temporary colored underline:', err);
                 }
             }
 
