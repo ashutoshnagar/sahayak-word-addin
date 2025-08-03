@@ -1599,6 +1599,10 @@
             async addTemporaryEmphasis(range) {
                 try {
                     await Word.run(async (context) => {
+                        // Load font properties first
+                        range.font.load("highlightColor");
+                        await context.sync();
+                        
                         // Store original highlighting
                         const originalColor = range.font.highlightColor;
                         
