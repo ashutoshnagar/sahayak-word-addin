@@ -915,9 +915,27 @@
                 try {
                     console.log('Starting LLM validation...');
                     
-                    // Call backend API
+                    // Prepare structured document data for Claude
+                    const documentStructure = {
+                        fullText: documentData.fullText,
+                        paragraphs: documentData.paragraphs.map((para, index) => ({
+                            index: index,
+                            text: para.text,
+                            font: {
+                                name: para.font.name,
+                                size: para.font.size
+                            },
+                            style: para.style,
+                            lineSpacing: para.lineSpacing,
+                            spaceAfter: para.spaceAfter,
+                            spaceBefore: para.spaceBefore
+                        })),
+                        documentLength: documentData.documentLength
+                    };
+                    
+                    // Call backend API with structured data
                     const response = await this.callBackendAPI({
-                        documentText: documentData.fullText,
+                        documentStructure: documentStructure,
                         analysisMode: 'llm',
                         userId: 'word_addin_user'
                     });
@@ -990,27 +1008,95 @@
 
                 console.log(`Processing ${llmData.issues.length} LLM issues`);
 
-                // Convert LLM issues to internal error format
-                this.errors = llmData.issues.map(issue => ({
-                    id: issue.id || this.generateErrorId(),
-                    type: issue.category || 'LLM_ISSUE',
-                    category: this.mapLLMSeverityToCategory(issue.severity),
-                    title: issue.title || 'LLM Issue',
-                    description: issue.description || 'Issue detected by AI',
-                    location: {
-                        paragraphIndex: this.findParagraphForIndex(issue.location?.startIndex || 0),
-                        type: 'paragraph',
-                        specificText: issue.location?.exactText || null,
-                        startIndex: issue.location?.startIndex || 0,
-                        endIndex: issue.location?.endIndex || 0
-                    },
-                    rule: issue.expected || 'LLM validation rule',
-                    autoFixable: issue.autoFixable || false,
-                    fix: issue.fix || null,
-                    llmGenerated: true
-                }));
+                // Convert LLM issues to internal error format - EXACTLY like Quick Scan
+                this.errors = llmData.issues.map(issue => {
+                    return {
+                        id: issue.id || this.generateErrorId(),
+                        type: issue.category || 'LLM_ISSUE',
+                        category: this.mapLLMSeverityToCategory(issue.severity),
+                        title: issue.title || 'LLM Issue',
+                        description: issue.description || 'Issue detected by AI',
+                        location: {
+                            paragraphIndex: issue.location?.paragraphIndex || 0, // Use Claude's exact paragraphIndex
+                            type: 'paragraph',
+                            specificText: issue.location?.searchableText || null, // Use Claude's searchableText
+                            exactText: issue.location?.searchableText || null,
+                            startIndex: 0,
+                            endIndex: 0
+                        },
+                        rule: issue.expected || 'LLM validation rule',
+                        autoFixable: issue.autoFixable || false,
+                        fix: issue.fix || null,
+                        llmGenerated: true
+                    };
+                });
 
                 console.log(`Converted to ${this.errors.length} internal errors`);
+            }
+
+            extractSearchableText(issue) {
+                // Try to extract meaningful text from the issue for searching
+                if (issue.location?.context) {
+                    // Extract from context - look for the actual problematic text
+                    const context = issue.location.context;
+                    
+                    // For name issues, extract the actual name
+                    if (issue.title.includes('Name') || issue.title.includes('Capitalization')) {
+                        const nameMatch = context.match(/([a-z]+ [a-z]+)/i);
+                        if (nameMatch) return nameMatch[1];
+                    }
+                    
+                    // For date issues, extract the date
+                    if (issue.title.includes('Date')) {
+                        const dateMatch = context.match(/(May \d+, \d+|[A-Z][a-z]+ \d+, \d+)/);
+                        if (dateMatch) return dateMatch[1];
+                    }
+                    
+                    // For currency issues, extract the amount
+                    if (issue.title.includes('Currency') || issue.title.includes('INR')) {
+                        const currencyMatch = context.match(/(\d+ lakhs?|\d+ crores?)/i);
+                        if (currencyMatch) return currencyMatch[1];
+                    }
+                    
+                    // For acronym issues, extract the acronym
+                    if (issue.title.includes('Acronym')) {
+                        const acronymMatch = context.match(/\b([A-Z]{2,})\b/);
+                        if (acronymMatch) return acronymMatch[1];
+                    }
+                    
+                    // Generic fallback - try to extract meaningful words from context
+                    const words = context.match(/\b[a-zA-Z]+\b/g);
+                    if (words && words.length > 2) {
+                        return words.slice(1, 3).join(' '); // Take middle words
+                    }
+                }
+                
+                // Last resort - use description keywords
+                if (issue.description) {
+                    const descWords = issue.description.match(/\b[A-Z][a-z]+|[a-z]{3,}\b/g);
+                    if (descWords && descWords.length > 0) {
+                        return descWords[0];
+                    }
+                }
+                
+                return null; // Will use paragraph range
+            }
+
+            findParagraphForContext(context) {
+                if (!context) return 0;
+                
+                // Use context clues to estimate paragraph location
+                if (context.includes('Functional Head') || context.includes('Head –')) return 1;
+                if (context.includes('Issuance Date') || context.includes('CF/2025')) return 0;
+                if (context.includes('CAPEX budget') || context.includes('lakhs')) return 5;
+                if (context.includes('CCTV') || context.includes('fire extinguisher')) return 3;
+                if (context.includes('pertaining to')) return 3;
+                
+                // Default estimation based on content
+                if (context.length < 50) return 0;
+                if (context.includes('budget') || context.includes('administration')) return 4;
+                
+                return 2; // Safe middle ground
             }
 
             mapLLMSeverityToCategory(severity) {

@@ -25,7 +25,7 @@ export default async function handler(req, res) {
       });
     }
 
-    const { documentText, analysisMode = 'llm', userId } = req.body;
+    const { documentText, documentStructure, analysisMode = 'llm', userId } = req.body;
 
     // Initialize LLM service
     const llmService = new LLMValidationService();
@@ -34,7 +34,16 @@ export default async function handler(req, res) {
     console.log(`Starting analysis for user: ${userId}, mode: ${analysisMode}`);
     
     const startTime = Date.now();
-    const result = await llmService.analyzeDocument(documentText);
+    let result;
+    
+    if (documentStructure) {
+      // Use structured document data for enhanced Claude analysis
+      result = await llmService.analyzeDocument(documentStructure);
+    } else {
+      // Fallback to plain text (backward compatibility)
+      result = await llmService.analyzeDocument({ fullText: documentText });
+    }
+    
     const processingTime = Date.now() - startTime;
 
     // Log usage for monitoring
