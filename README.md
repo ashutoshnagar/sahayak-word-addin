@@ -1,4 +1,4 @@
-# Sahayak - Your Intelligent Document Assistant
+# Sahayak - Your Intelligent Document Assistant 🚀
 
 Sahayak (सहायक) is a Grammarly-like Word add-in that provides intelligent document compliance checking for audit reports and other business documents. It scans documents against comprehensive validation rules and provides real-time feedback with auto-fix capabilities.
 
