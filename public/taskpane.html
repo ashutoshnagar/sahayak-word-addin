@@ -862,7 +862,11 @@
                             category: 'WARNING',
                             title: 'Incorrect Capitalization',
                             description: `"${fullMatch}" should be "${firstWord.charAt(0).toUpperCase() + firstWord.slice(1).toLowerCase()} ${lastWord.toLowerCase()}"`,
-                            location: { paragraphIndex: index, type: 'paragraph' },
+                            location: { 
+                                paragraphIndex: index, 
+                                type: 'paragraph',
+                                specificText: fullMatch
+                            },
                             rule: 'First word capitalized, team/policy lowercase',
                             autoFixable: true
                         });
@@ -876,7 +880,11 @@
                         category: 'WARNING',
                         title: 'Board Capitalization',
                         description: '"Board" should always be capitalized',
-                        location: { paragraphIndex: index, type: 'paragraph' },
+                        location: { 
+                            paragraphIndex: index, 
+                            type: 'paragraph',
+                            specificText: 'board'
+                        },
                         rule: 'Board should always be capitalized',
                         autoFixable: true
                     });
@@ -900,13 +908,20 @@
 
             validatePrefixUsage(text, index) {
                 const prefixPattern = /(Mr\.|Miss\.|Ms\.|Mrs\.)\s+\w+/g;
-                if (prefixPattern.test(text)) {
+                const matches = text.matchAll(prefixPattern);
+                
+                for (const match of matches) {
+                    const [fullMatch] = match;
                     this.addError({
                         type: 'FORMAT_ERROR',
                         category: 'WARNING',
                         title: 'Prefix Usage',
                         description: 'Remove prefixes (Mr., Miss, Ms.) before names',
-                        location: { paragraphIndex: index, type: 'paragraph' },
+                        location: { 
+                            paragraphIndex: index, 
+                            type: 'paragraph',
+                            specificText: fullMatch
+                        },
                         rule: 'Don\'t use prefix before names',
                         autoFixable: true
                     });
@@ -1100,7 +1115,7 @@
                 return 'error_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
             }
 
-            // Highlighting methods
+            // Enhanced highlighting methods with precise text ranges
 
             async highlightErrors() {
                 await Word.run(async (context) => {
@@ -1113,16 +1128,36 @@
                             paragraph.load("text");
                             await context.sync();
 
-                            // Apply temporary highlighting
-                            const range = paragraph.getRange();
-                            range.font.highlightColor = this.getErrorHighlightColor(error.category);
+                            let targetRange;
                             
-                            // Store for later cleanup
+                            // Try to find specific text range if available
+                            if (error.location.specificText) {
+                                const searchResults = paragraph.search(error.location.specificText, { matchCase: false, matchWholeWord: false });
+                                searchResults.load("items");
+                                await context.sync();
+                                
+                                if (searchResults.items.length > 0) {
+                                    targetRange = searchResults.items[0];
+                                } else {
+                                    targetRange = paragraph.getRange();
+                                }
+                            } else {
+                                targetRange = paragraph.getRange();
+                            }
+
+                            // Apply highlighting with subtle background
+                            targetRange.font.highlightColor = this.getErrorHighlightColor(error.category);
+                            
+                            // Store for later cleanup and navigation
                             this.highlightedRanges.push({
-                                range: range,
+                                range: targetRange,
                                 errorId: error.id,
-                                category: error.category
+                                category: error.category,
+                                paragraphIndex: error.location.paragraphIndex
                             });
+
+                            // Store the range reference in the error for navigation
+                            error.documentRange = targetRange;
 
                         } catch (err) {
                             console.warn('Could not highlight error:', err);
@@ -1199,10 +1234,24 @@
                     errorItem.innerHTML = `
                         <div class="error-title">${error.title}</div>
                         <div class="error-description">${error.description}</div>
-                        <div class="error-location">Paragraph ${error.location.paragraphIndex + 1}</div>
+                        <div class="error-location">Paragraph ${error.location.paragraphIndex + 1} • Click to navigate</div>
                     `;
                     
-                    errorItem.addEventListener('click', () => this.showErrorCard(error));
+                    // Add click handler for navigation and error card
+                    errorItem.addEventListener('click', async () => {
+                        await this.navigateToError(error);
+                        this.showErrorCard(error);
+                    });
+
+                    // Add hover effects for better UX
+                    errorItem.addEventListener('mouseenter', () => {
+                        this.highlightSpecificError(error, true);
+                    });
+
+                    errorItem.addEventListener('mouseleave', () => {
+                        this.highlightSpecificError(error, false);
+                    });
+                    
                     list.appendChild(errorItem);
                 });
             }
@@ -1216,6 +1265,86 @@
                 document.getElementById('error-suggestion').textContent = error.rule;
                 
                 document.getElementById('error-card').classList.remove('hidden');
+            }
+
+            // Navigation method to jump to specific error in document
+            async navigateToError(error) {
+                try {
+                    await Word.run(async (context) => {
+                        const paragraph = context.document.body.paragraphs.getByIndex(error.location.paragraphIndex);
+                        paragraph.load("text");
+                        await context.sync();
+
+                        // Get the range to navigate to
+                        let targetRange;
+                        if (error.documentRange) {
+                            targetRange = error.documentRange;
+                        } else {
+                            targetRange = paragraph.getRange();
+                        }
+
+                        // Select the range to focus user attention
+                        targetRange.select();
+                        
+                        // Scroll to the selected range
+                        targetRange.track();
+                        await context.sync();
+
+                        // Add temporary visual emphasis
+                        await this.addTemporaryEmphasis(targetRange);
+                    });
+                } catch (err) {
+                    console.warn('Could not navigate to error:', err);
+                }
+            }
+
+            // Add temporary visual emphasis when navigating to an error
+            async addTemporaryEmphasis(range) {
+                try {
+                    await Word.run(async (context) => {
+                        // Store original highlighting
+                        const originalColor = range.font.highlightColor;
+                        
+                        // Add emphasis
+                        range.font.highlightColor = '#FFE082'; // Bright yellow
+                        await context.sync();
+                        
+                        // Remove emphasis after delay
+                        setTimeout(async () => {
+                            try {
+                                await Word.run(async (ctx) => {
+                                    range.font.highlightColor = originalColor;
+                                    await ctx.sync();
+                                });
+                            } catch (err) {
+                                console.warn('Could not remove emphasis:', err);
+                            }
+                        }, 2000);
+                    });
+                } catch (err) {
+                    console.warn('Could not add emphasis:', err);
+                }
+            }
+
+            // Highlight specific error on hover
+            async highlightSpecificError(error, shouldHighlight) {
+                try {
+                    await Word.run(async (context) => {
+                        const highlightItem = this.highlightedRanges.find(item => item.errorId === error.id);
+                        if (highlightItem && highlightItem.range) {
+                            if (shouldHighlight) {
+                                // Add hover effect
+                                highlightItem.range.font.highlightColor = '#FFECB3'; // Light amber
+                            } else {
+                                // Restore original highlight
+                                highlightItem.range.font.highlightColor = this.getErrorHighlightColor(error.category);
+                            }
+                            await context.sync();
+                        }
+                    });
+                } catch (err) {
+                    console.warn('Could not highlight specific error:', err);
+                }
             }
 
             hideErrorCard() {
