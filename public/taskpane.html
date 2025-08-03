@@ -634,8 +634,8 @@
                     // Run all validation rules
                     await this.runValidationRules(documentData);
                     
-                    // Apply highlights and show results
-                    await this.highlightErrors();
+                    // Store error ranges for navigation (no permanent highlighting)
+                    await this.storeErrorRanges();
                     this.displayResults();
                     this.showSection('results-section');
                     
@@ -1115,6 +1115,58 @@
                 return 'error_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
             }
 
+            // Store error ranges for navigation without permanent highlighting
+            async storeErrorRanges() {
+                await Word.run(async (context) => {
+                    // Load all paragraphs first
+                    const paragraphs = context.document.body.paragraphs;
+                    paragraphs.load("text");
+                    await context.sync();
+
+                    for (const error of this.errors) {
+                        try {
+                            // Check if paragraph index is valid
+                            if (error.location.paragraphIndex >= paragraphs.items.length) {
+                                console.warn(`Paragraph index ${error.location.paragraphIndex} is out of range`);
+                                continue;
+                            }
+
+                            const paragraph = paragraphs.items[error.location.paragraphIndex];
+                            let targetRange;
+                            
+                            // Try to find specific text range if available
+                            if (error.location.specificText) {
+                                try {
+                                    const searchResults = paragraph.search(error.location.specificText, { 
+                                        matchCase: false, 
+                                        matchWholeWord: false 
+                                    });
+                                    searchResults.load("items");
+                                    await context.sync();
+                                    
+                                    if (searchResults.items.length > 0) {
+                                        targetRange = searchResults.items[0];
+                                    } else {
+                                        targetRange = paragraph.getRange();
+                                    }
+                                } catch (searchErr) {
+                                    console.warn('Search failed, using paragraph range:', searchErr);
+                                    targetRange = paragraph.getRange();
+                                }
+                            } else {
+                                targetRange = paragraph.getRange();
+                            }
+
+                            // Store the range reference in the error for navigation (NO highlighting)
+                            error.documentRange = targetRange;
+
+                        } catch (err) {
+                            console.warn('Could not store error range:', err);
+                        }
+                    }
+                });
+            }
+
             // Enhanced highlighting methods with precise text ranges
 
             async highlightErrors() {
@@ -1258,11 +1310,11 @@
 
                     // Add hover effects for better UX
                     errorItem.addEventListener('mouseenter', () => {
-                        this.highlightSpecificError(error, true);
+                        this.addTemporaryUnderline(error, true);
                     });
 
                     errorItem.addEventListener('mouseleave', () => {
-                        this.highlightSpecificError(error, false);
+                        this.addTemporaryUnderline(error, false);
                     });
                     
                     list.appendChild(errorItem);
@@ -1372,6 +1424,64 @@
                     });
                 } catch (err) {
                     console.warn('Could not add emphasis:', err);
+                }
+            }
+
+            // Add temporary underline highlighting for hover effects
+            async addTemporaryUnderline(error, shouldUnderline) {
+                try {
+                    await Word.run(async (context) => {
+                        // Load all paragraphs first
+                        const paragraphs = context.document.body.paragraphs;
+                        paragraphs.load("text");
+                        await context.sync();
+                        
+                        // Check if paragraph index is valid
+                        if (error.location.paragraphIndex >= paragraphs.items.length) {
+                            console.warn(`Paragraph index ${error.location.paragraphIndex} is out of range`);
+                            return;
+                        }
+                        
+                        // Get the specific paragraph
+                        const paragraph = paragraphs.items[error.location.paragraphIndex];
+                        let targetRange;
+                        
+                        // Try to find specific text if available
+                        if (error.location.specificText) {
+                            try {
+                                const searchResults = paragraph.search(error.location.specificText, { 
+                                    matchCase: false, 
+                                    matchWholeWord: false 
+                                });
+                                searchResults.load("items");
+                                await context.sync();
+                                
+                                if (searchResults.items.length > 0) {
+                                    targetRange = searchResults.items[0];
+                                } else {
+                                    targetRange = paragraph.getRange();
+                                }
+                            } catch (searchErr) {
+                                console.warn('Search failed, using paragraph range:', searchErr);
+                                targetRange = paragraph.getRange();
+                            }
+                        } else {
+                            targetRange = paragraph.getRange();
+                        }
+
+                        // Apply or remove underline and subtle highlight
+                        if (shouldUnderline) {
+                            targetRange.font.underline = 'Single';
+                            targetRange.font.highlightColor = '#FFF8DC'; // Very light gold
+                        } else {
+                            targetRange.font.underline = 'None';
+                            targetRange.font.highlightColor = null;
+                        }
+                        
+                        await context.sync();
+                    });
+                } catch (err) {
+                    console.warn('Could not add temporary underline:', err);
                 }
             }
 
