@@ -1859,63 +1859,50 @@
                     await Word.run(async (context) => {
                         console.log('Inside Word.run context');
                         
+                        // Use the SAME navigation logic for both LLM and rule-based errors
+                        // Load all paragraphs first
+                        const paragraphs = context.document.body.paragraphs;
+                        paragraphs.load("text");
+                        await context.sync();
+                        
+                        // Check if paragraph index is valid
+                        if (error.location.paragraphIndex >= paragraphs.items.length) {
+                            console.warn(`Paragraph index ${error.location.paragraphIndex} is out of range`);
+                            throw new Error('Paragraph not found in document');
+                        }
+                        
+                        // Get the specific paragraph
+                        const paragraph = paragraphs.items[error.location.paragraphIndex];
+                        console.log('Paragraph loaded:', paragraph.text);
+
                         let targetRange;
                         
-                        // Check if this is an LLM-generated error with character indices
-                        if (error.llmGenerated && error.location.startIndex !== undefined && error.location.endIndex !== undefined) {
-                            console.log(`Creating range from character indices: ${error.location.startIndex}-${error.location.endIndex}`);
-                            
+                        // Try to find specific text if available (works for both LLM and rule-based)
+                        const searchText = error.location.exactText || error.location.specificText;
+                        if (searchText) {
+                            console.log('Searching for specific text:', searchText);
                             try {
-                                // Create range directly from character indices
-                                const body = context.document.body;
-                                const bodyRange = body.getRange();
-                                bodyRange.load("text");
+                                const searchResults = paragraph.search(searchText, { 
+                                    matchCase: false, 
+                                    matchWholeWord: false 
+                                });
+                                searchResults.load("items");
                                 await context.sync();
                                 
-                                // Validate indices
-                                const docLength = bodyRange.text.length;
-                                const startIndex = Math.min(Math.max(0, error.location.startIndex), docLength);
-                                const endIndex = Math.min(Math.max(startIndex + 1, error.location.endIndex), docLength);
-                                
-                                console.log(`Document length: ${docLength}, using indices: ${startIndex}-${endIndex}`);
-                                
-                                // Create range from character positions
-                                targetRange = bodyRange.getRange();
-                                targetRange = targetRange.getRange(Word.RangeLocation.start).expandTo(
-                                    bodyRange.getRange(Word.RangeLocation.start).getRange(Word.RangeLocation.after)
-                                );
-                                
-                                // Try to get the specific range using search if we have exact text
-                                if (error.location.exactText) {
-                                    const searchResults = body.search(error.location.exactText, { 
-                                        matchCase: false, 
-                                        matchWholeWord: false 
-                                    });
-                                    searchResults.load("items");
-                                    await context.sync();
-                                    
-                                    if (searchResults.items.length > 0) {
-                                        targetRange = searchResults.items[0];
-                                        console.log('Found text using document search');
-                                    } else {
-                                        console.log('Text not found, using approximate range');
-                                        // Fallback: use approximate paragraph range
-                                        await this.navigateToErrorFallback(error, context);
-                                        return;
-                                    }
+                                if (searchResults.items.length > 0) {
+                                    targetRange = searchResults.items[0];
+                                    console.log('Found specific text range');
+                                } else {
+                                    console.log('Specific text not found, using paragraph range');
+                                    targetRange = paragraph.getRange();
                                 }
-                                
-                            } catch (rangeError) {
-                                console.warn('Character index navigation failed:', rangeError);
-                                // Fallback to paragraph-based navigation
-                                await this.navigateToErrorFallback(error, context);
-                                return;
+                            } catch (searchErr) {
+                                console.warn('Search failed, using paragraph range:', searchErr);
+                                targetRange = paragraph.getRange();
                             }
-                            
                         } else {
-                            // Use traditional paragraph-based navigation for rule-based errors
-                            await this.navigateToErrorFallback(error, context);
-                            return;
+                            console.log('No specific text, using paragraph range');
+                            targetRange = paragraph.getRange();
                         }
 
                         // Select and scroll to the range
@@ -1932,65 +1919,6 @@
                     console.error('Navigation failed:', err);
                     alert(`Navigation failed: ${err.message}`);
                 }
-            }
-
-            async navigateToErrorFallback(error, context) {
-                console.log('Using fallback paragraph-based navigation');
-                
-                // Load all paragraphs first
-                const paragraphs = context.document.body.paragraphs;
-                paragraphs.load("text");
-                await context.sync();
-                
-                // Check if paragraph index is valid
-                if (error.location.paragraphIndex >= paragraphs.items.length) {
-                    console.warn(`Paragraph index ${error.location.paragraphIndex} is out of range`);
-                    throw new Error('Paragraph not found in document');
-                }
-                
-                // Get the specific paragraph
-                const paragraph = paragraphs.items[error.location.paragraphIndex];
-                console.log('Paragraph loaded:', paragraph.text);
-
-                let targetRange;
-                
-                // Try to find specific text if available
-                if (error.location.specificText || error.location.exactText) {
-                    const searchText = error.location.exactText || error.location.specificText;
-                    console.log('Searching for specific text:', searchText);
-                    try {
-                        const searchResults = paragraph.search(searchText, { 
-                            matchCase: false, 
-                            matchWholeWord: false 
-                        });
-                        searchResults.load("items");
-                        await context.sync();
-                        
-                        if (searchResults.items.length > 0) {
-                            targetRange = searchResults.items[0];
-                            console.log('Found specific text range');
-                        } else {
-                            console.log('Specific text not found, using paragraph range');
-                            targetRange = paragraph.getRange();
-                        }
-                    } catch (searchErr) {
-                        console.warn('Search failed, using paragraph range:', searchErr);
-                        targetRange = paragraph.getRange();
-                    }
-                } else {
-                    console.log('No specific text, using paragraph range');
-                    targetRange = paragraph.getRange();
-                }
-
-                // Select and scroll to the range
-                console.log('Selecting range...');
-                targetRange.select();
-                await context.sync();
-                
-                console.log('Range selected successfully');
-                
-                // Add temporary visual emphasis
-                await this.addTemporaryEmphasis(targetRange);
             }
 
             // Add temporary visual emphasis when navigating to an error
