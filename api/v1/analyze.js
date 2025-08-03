@@ -54,7 +54,7 @@ export default async function handler(req, res) {
       processingTime: processingTime,
       data: result,
       meta: {
-        documentLength: documentText.length,
+        documentLength: documentStructure ? documentStructure.fullText.length : documentText.length,
         analysisMode: analysisMode,
         timestamp: new Date().toISOString()
       }
