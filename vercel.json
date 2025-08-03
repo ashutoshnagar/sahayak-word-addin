@@ -1,4 +1,11 @@
 {
+  "version": 2,
+  "functions": {
+    "api/**/*.js": {
+      "runtime": "nodejs18.x",
+      "maxDuration": 30
+    }
+  },
   "headers": [
     {
       "source": "/taskpane.html",
@@ -38,6 +45,27 @@
           "value": "*"
         }
       ]
+    },
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, POST, PUT, DELETE, OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "Content-Type, Authorization, X-API-Key, X-User-ID"
+        }
+      ]
     }
-  ]
+  ],
+  "env": {
+    "ANTHROPIC_API_KEY": "@anthropic-api-key",
+    "NODE_ENV": "production"
+  }
 }
