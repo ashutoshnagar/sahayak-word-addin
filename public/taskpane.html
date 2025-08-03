@@ -1122,23 +1122,36 @@
                     // Clear existing highlights
                     await this.clearHighlights();
 
+                    // Load all paragraphs first
+                    const paragraphs = context.document.body.paragraphs;
+                    paragraphs.load("text,font");
+                    await context.sync();
+
                     for (const error of this.errors) {
                         try {
-                            const paragraph = context.document.body.paragraphs.getByIndex(error.location.paragraphIndex);
-                            paragraph.load("text");
-                            await context.sync();
+                            // Check if paragraph index is valid
+                            if (error.location.paragraphIndex >= paragraphs.items.length) {
+                                console.warn(`Paragraph index ${error.location.paragraphIndex} is out of range`);
+                                continue;
+                            }
 
+                            const paragraph = paragraphs.items[error.location.paragraphIndex];
                             let targetRange;
                             
                             // Try to find specific text range if available
                             if (error.location.specificText) {
-                                const searchResults = paragraph.search(error.location.specificText, { matchCase: false, matchWholeWord: false });
-                                searchResults.load("items");
-                                await context.sync();
-                                
-                                if (searchResults.items.length > 0) {
-                                    targetRange = searchResults.items[0];
-                                } else {
+                                try {
+                                    const searchResults = paragraph.search(error.location.specificText, { matchCase: false, matchWholeWord: false });
+                                    searchResults.load("items");
+                                    await context.sync();
+                                    
+                                    if (searchResults.items.length > 0) {
+                                        targetRange = searchResults.items[0];
+                                    } else {
+                                        targetRange = paragraph.getRange();
+                                    }
+                                } catch (searchErr) {
+                                    console.warn('Search failed, using paragraph range:', searchErr);
                                     targetRange = paragraph.getRange();
                                 }
                             } else {
@@ -1269,32 +1282,68 @@
 
             // Navigation method to jump to specific error in document
             async navigateToError(error) {
+                console.log('Navigating to error:', error);
                 try {
                     await Word.run(async (context) => {
-                        const paragraph = context.document.body.paragraphs.getByIndex(error.location.paragraphIndex);
-                        paragraph.load("text");
+                        console.log('Inside Word.run context');
+                        
+                        // Load all paragraphs first
+                        const paragraphs = context.document.body.paragraphs;
+                        paragraphs.load("text");
                         await context.sync();
+                        
+                        // Check if paragraph index is valid
+                        if (error.location.paragraphIndex >= paragraphs.items.length) {
+                            console.warn(`Paragraph index ${error.location.paragraphIndex} is out of range`);
+                            throw new Error('Paragraph not found in document');
+                        }
+                        
+                        // Get the specific paragraph
+                        const paragraph = paragraphs.items[error.location.paragraphIndex];
+                        console.log('Paragraph loaded:', paragraph.text);
 
-                        // Get the range to navigate to
                         let targetRange;
-                        if (error.documentRange) {
-                            targetRange = error.documentRange;
+                        
+                        // Try to find specific text if available
+                        if (error.location.specificText) {
+                            console.log('Searching for specific text:', error.location.specificText);
+                            try {
+                                const searchResults = paragraph.search(error.location.specificText, { 
+                                    matchCase: false, 
+                                    matchWholeWord: false 
+                                });
+                                searchResults.load("items");
+                                await context.sync();
+                                
+                                if (searchResults.items.length > 0) {
+                                    targetRange = searchResults.items[0];
+                                    console.log('Found specific text range');
+                                } else {
+                                    console.log('Specific text not found, using paragraph range');
+                                    targetRange = paragraph.getRange();
+                                }
+                            } catch (searchErr) {
+                                console.warn('Search failed, using paragraph range:', searchErr);
+                                targetRange = paragraph.getRange();
+                            }
                         } else {
+                            console.log('No specific text, using paragraph range');
                             targetRange = paragraph.getRange();
                         }
 
-                        // Select the range to focus user attention
+                        // Select and scroll to the range
+                        console.log('Selecting range...');
                         targetRange.select();
-                        
-                        // Scroll to the selected range
-                        targetRange.track();
                         await context.sync();
-
+                        
+                        console.log('Range selected successfully');
+                        
                         // Add temporary visual emphasis
                         await this.addTemporaryEmphasis(targetRange);
                     });
                 } catch (err) {
-                    console.warn('Could not navigate to error:', err);
+                    console.error('Navigation failed:', err);
+                    alert(`Navigation failed: ${err.message}`);
                 }
             }
 
@@ -1391,7 +1440,18 @@
 
             async fixSingleError(error) {
                 await Word.run(async (context) => {
-                    const paragraph = context.document.body.paragraphs.getByIndex(error.location.paragraphIndex);
+                    // Load all paragraphs first
+                    const paragraphs = context.document.body.paragraphs;
+                    paragraphs.load("text,font,lineSpacing,spaceAfter");
+                    await context.sync();
+                    
+                    // Check if paragraph index is valid
+                    if (error.location.paragraphIndex >= paragraphs.items.length) {
+                        console.warn(`Cannot fix error: Paragraph index ${error.location.paragraphIndex} is out of range`);
+                        return;
+                    }
+                    
+                    const paragraph = paragraphs.items[error.location.paragraphIndex];
                     
                     if (error.fix) {
                         if (error.fix.fontName) {
