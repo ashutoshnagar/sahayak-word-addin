@@ -65,7 +65,6 @@
     }
   ],
   "env": {
-    "ANTHROPIC_API_KEY": "@anthropic-api-key",
     "NODE_ENV": "production"
   }
 }
