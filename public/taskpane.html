@@ -1842,6 +1842,7 @@
                     
                     const paragraph = paragraphs.items[error.location.paragraphIndex];
                     
+                    // Handle font and formatting fixes
                     if (error.fix) {
                         if (error.fix.fontName) {
                             paragraph.font.name = error.fix.fontName;
@@ -1857,8 +1858,167 @@
                         }
                     }
                     
+                    // Handle text-based fixes
+                    await this.fixTextIssues(error, paragraph, context);
+                    
                     await context.sync();
                 });
+            }
+
+            async fixTextIssues(error, paragraph, context) {
+                try {
+                    // Handle different types of text fixes based on error type
+                    switch (error.title) {
+                        case 'Prefix Usage':
+                            await this.removePrefix(error, paragraph, context);
+                            break;
+                        case 'Incorrect Capitalization':
+                            await this.fixCapitalization(error, paragraph, context);
+                            break;
+                        case 'Board Capitalization':
+                            await this.fixBoardCapitalization(error, paragraph, context);
+                            break;
+                        case 'Missing Slash Spacing':
+                            await this.fixSlashSpacing(error, paragraph, context);
+                            break;
+                        case 'Number Representation':
+                            await this.fixNumberRepresentation(error, paragraph, context);
+                            break;
+                        case 'Missing INR Prefix':
+                            await this.fixCurrencyPrefix(error, paragraph, context);
+                            break;
+                        case 'Missing Comma in Numbers':
+                            await this.fixCommaInNumbers(error, paragraph, context);
+                            break;
+                        case 'Incorrect Date Format':
+                            await this.fixDateFormat(error, paragraph, context);
+                            break;
+                        default:
+                            console.log(`No text fix available for: ${error.title}`);
+                    }
+                } catch (err) {
+                    console.warn('Could not apply text fix:', err);
+                }
+            }
+
+            async removePrefix(error, paragraph, context) {
+                // Remove prefixes like Mr., Ms., Miss, Mrs.
+                const prefixPattern = /(Mr\.|Miss\.|Ms\.|Mrs\.)\s+(\w+)/g;
+                const text = paragraph.text;
+                const newText = text.replace(prefixPattern, '$2'); // Keep only the name
+                
+                if (newText !== text) {
+                    paragraph.insertText(newText, Word.InsertLocation.replace);
+                    await context.sync();
+                }
+            }
+
+            async fixCapitalization(error, paragraph, context) {
+                // Fix team/policy capitalization
+                const teamPolicyPattern = /(\w+)\s+(team|policy)/gi;
+                const text = paragraph.text;
+                const newText = text.replace(teamPolicyPattern, (match, firstWord, lastWord) => {
+                    return firstWord.charAt(0).toUpperCase() + firstWord.slice(1).toLowerCase() + ' ' + lastWord.toLowerCase();
+                });
+                
+                if (newText !== text) {
+                    paragraph.insertText(newText, Word.InsertLocation.replace);
+                    await context.sync();
+                }
+            }
+
+            async fixBoardCapitalization(error, paragraph, context) {
+                // Fix Board capitalization
+                const text = paragraph.text;
+                const newText = text.replace(/\bboard\b/gi, 'Board');
+                
+                if (newText !== text) {
+                    paragraph.insertText(newText, Word.InsertLocation.replace);
+                    await context.sync();
+                }
+            }
+
+            async fixSlashSpacing(error, paragraph, context) {
+                // Add spaces around slashes
+                const text = paragraph.text;
+                const newText = text.replace(/(\w)\/(\w)/g, '$1 / $2');
+                
+                if (newText !== text) {
+                    paragraph.insertText(newText, Word.InsertLocation.replace);
+                    await context.sync();
+                }
+            }
+
+            async fixNumberRepresentation(error, paragraph, context) {
+                // Convert numbers 1-10 to words
+                const numberWords = {
+                    '1': 'one', '2': 'two', '3': 'three', '4': 'four', '5': 'five',
+                    '6': 'six', '7': 'seven', '8': 'eight', '9': 'nine', '10': 'ten'
+                };
+                
+                const text = paragraph.text;
+                let newText = text;
+                
+                for (const [num, word] of Object.entries(numberWords)) {
+                    // Only replace standalone numbers, not part of dates or years
+                    const regex = new RegExp(`\\b${num}\\b(?!\\d)`, 'g');
+                    if (regex.test(newText) && !this.isYearOrException(newText, num)) {
+                        newText = newText.replace(regex, word);
+                    }
+                }
+                
+                if (newText !== text) {
+                    paragraph.insertText(newText, Word.InsertLocation.replace);
+                    await context.sync();
+                }
+            }
+
+            async fixCurrencyPrefix(error, paragraph, context) {
+                // Add INR prefix to currency amounts
+                const text = paragraph.text;
+                const currencyPattern = /(\d+(?:\.\d+)?)\s*(lakhs?|crores?)/gi;
+                const newText = text.replace(currencyPattern, 'INR $1 $2');
+                
+                if (newText !== text) {
+                    paragraph.insertText(newText, Word.InsertLocation.replace);
+                    await context.sync();
+                }
+            }
+
+            async fixCommaInNumbers(error, paragraph, context) {
+                // Add commas to large numbers
+                const text = paragraph.text;
+                const numberPattern = /\b(\d{4,})\b/g;
+                const newText = text.replace(numberPattern, (match) => {
+                    return match.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                });
+                
+                if (newText !== text) {
+                    paragraph.insertText(newText, Word.InsertLocation.replace);
+                    await context.sync();
+                }
+            }
+
+            async fixDateFormat(error, paragraph, context) {
+                // Convert dates to MMM, DD YYYY format
+                const text = paragraph.text;
+                const datePattern = /\b(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})\b/g;
+                
+                const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                              'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                
+                const newText = text.replace(datePattern, (match, day, month, year) => {
+                    const monthIndex = parseInt(month) - 1;
+                    if (monthIndex >= 0 && monthIndex < 12) {
+                        return `${months[monthIndex]} ${day}, ${year}`;
+                    }
+                    return match; // Return original if invalid
+                });
+                
+                if (newText !== text) {
+                    paragraph.insertText(newText, Word.InsertLocation.replace);
+                    await context.sync();
+                }
             }
         }
 
