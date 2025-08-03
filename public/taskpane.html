@@ -1026,12 +1026,43 @@
                         },
                         rule: issue.expected || 'LLM validation rule',
                         autoFixable: issue.autoFixable || false,
-                        fix: issue.fix || null,
+                        fix: this.convertClaudeFixFormat(issue.fix),
                         llmGenerated: true
                     };
                 });
 
                 console.log(`Converted to ${this.errors.length} internal errors`);
+            }
+
+            convertClaudeFixFormat(claudeFix) {
+                if (!claudeFix || !claudeFix.action) {
+                    return null;
+                }
+
+                // Convert Claude's fix format to internal format
+                switch (claudeFix.action) {
+                    case 'changeFontFamily':
+                        return { fontName: claudeFix.newValue };
+                    
+                    case 'changeFontSize':
+                        return { fontSize: parseFloat(claudeFix.newValue) };
+                    
+                    case 'changeLineSpacing':
+                        return { lineSpacing: parseFloat(claudeFix.newValue) };
+                    
+                    case 'changeSpacing':
+                        return { spaceAfter: parseFloat(claudeFix.newValue) };
+                    
+                    case 'replaceText':
+                        return { 
+                            textReplacement: claudeFix.newText || claudeFix.newValue,
+                            originalText: claudeFix.originalText
+                        };
+                    
+                    default:
+                        // For other types, return the original format
+                        return claudeFix;
+                }
             }
 
             extractSearchableText(issue) {
